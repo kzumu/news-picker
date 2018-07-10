@@ -3,6 +3,7 @@ package com.kaz.news_picker
 import android.support.v7.app.AppCompatActivity
 import android.os.Bundle
 import android.util.Log
+import android.widget.TextView
 import com.squareup.okhttp.ResponseBody
 import retrofit.Response
 import rx.Subscriber
@@ -27,7 +28,8 @@ class MainActivity : AppCompatActivity() {
                     override fun onNext(t: ResponseBody?) {
 
                         Log.d("onCreate","onNext")
-                        Log.d("onCreate", t?.string())
+                        val textView = findViewById(R.id.textView) as TextView
+                        textView.text = "${t?.string()}"
                     }
 
                     override fun onError(e: Throwable?) {
