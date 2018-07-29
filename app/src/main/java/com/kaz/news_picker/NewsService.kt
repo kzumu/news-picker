@@ -1,6 +1,8 @@
 package com.kaz.news_picker
 
 import android.text.TextUtils
+import android.util.Log
+import com.kaz.news_picker.Request.NewsPageRequest
 import com.squareup.moshi.Moshi
 import io.reactivex.Observable
 import okhttp3.OkHttpClient
@@ -16,7 +18,10 @@ interface NewsService {
     fun schedule(): Observable<ResponseBody>
 }
 
-fun fetch(request: NewsPageRequest): Observable<String> {
+typealias Title = String
+typealias Response = String
+
+fun fetch(request: NewsPageRequest): Observable<Pair<Title, Response>> {
     val moshi = Moshi.Builder()
             .build()
 
@@ -34,11 +39,12 @@ fun fetch(request: NewsPageRequest): Observable<String> {
             .schedule()
             .map {
                 val document = Jsoup.parse(it.string())
+                Log.d("text", document.select(request.cssQuery).html())
                 val texts: List<String> = document
                         .select(request.cssQuery)
                         .map { it.text() }
                 TextUtils.join("\n", texts)
             }
 
-    return response
+    return response.map { Pair(request.title, it) }
 }

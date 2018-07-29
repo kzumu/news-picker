@@ -1,6 +1,9 @@
-package com.kaz.news_picker
+package com.kaz.news_picker.Request
 
-class LivedoorNewsPageRequest :NewsPageRequest {
+class LivedoorNewsPageRequest : NewsPageRequest {
+    override val title: String
+        get() = "ライブドア" +
+                ""
     override val url: String
         get() = "http://news.livedoor.com/"
 
