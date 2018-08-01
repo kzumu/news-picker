@@ -6,6 +6,7 @@ class LivedoorNewsPageRequest : NewsPageRequest {
                 ""
     override val url: String
         get() = "http://news.livedoor.com/"
+//        get() = "http://localhost:3000/"
 
     override val cssQuery: String
         get() = "#main > div > section > div > div > div > ul > li > a"

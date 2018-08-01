@@ -2,6 +2,7 @@ package com.kaz.news_picker
 
 import android.text.TextUtils
 import android.util.Log
+import android.util.TimeUtils
 import com.kaz.news_picker.Request.NewsPageRequest
 import com.squareup.moshi.Moshi
 import io.reactivex.Observable
@@ -12,6 +13,7 @@ import retrofit2.Retrofit
 import retrofit2.adapter.rxjava2.RxJava2CallAdapterFactory
 import retrofit2.converter.moshi.MoshiConverterFactory
 import retrofit2.http.GET
+import java.util.concurrent.TimeUnit
 
 interface NewsService {
     @GET("/")
@@ -25,7 +27,11 @@ fun fetch(request: NewsPageRequest): Observable<Pair<Title, Response>> {
     val moshi = Moshi.Builder()
             .build()
 
-    val okClient = OkHttpClient()
+    val okClient = OkHttpClient
+            .Builder()
+            .connectTimeout(15, TimeUnit.SECONDS)
+            .readTimeout(15, TimeUnit.SECONDS)
+            .build()
 
     val builder = Retrofit.Builder()
             .client(okClient)

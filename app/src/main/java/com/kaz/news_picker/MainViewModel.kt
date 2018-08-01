@@ -1,5 +1,6 @@
 package com.kaz.news_picker
 
+import android.util.Log
 import com.jakewharton.rxrelay2.BehaviorRelay
 import com.kaz.news_picker.Request.HatebuItPageRequest
 import com.kaz.news_picker.Request.LivedoorNewsPageRequest
@@ -7,6 +8,7 @@ import com.kaz.news_picker.Request.NewsPicksPageRequest
 import io.reactivex.Observable
 import io.reactivex.disposables.CompositeDisposable
 import io.reactivex.rxkotlin.Observables
+import io.reactivex.rxkotlin.subscribeBy
 import io.reactivex.rxkotlin.withLatestFrom
 import io.reactivex.schedulers.Schedulers
 import jp.keita.kagurazaka.rxproperty.toReadOnlyRxProperty
@@ -16,19 +18,18 @@ import java.util.concurrent.TimeUnit
 
 class MainViewModel {
     private val disposable = CompositeDisposable()
-    private val topics: BehaviorRelay<String> = BehaviorRelay.createDefault("")
+    private val topics: BehaviorRelay<String> = BehaviorRelay.createDefault("Loading...")
     val output = topics.toReadOnlyRxProperty()
 
     fun onCreate() {
         Observable.merge(Observable.just(Unit),Observable.interval(1, TimeUnit.HOURS))
-                .withLatestFrom(
-                        Observables.combineLatest(
-                                fetch(LivedoorNewsPageRequest()),
-                                fetch(NewsPicksPageRequest()),
-                                fetch(HatebuItPageRequest())
-                                )
-                )
-                .map { it.second }
+                .flatMap {
+                    Observables.combineLatest(
+                            fetch(LivedoorNewsPageRequest()),
+                            fetch(NewsPicksPageRequest()),
+                            fetch(HatebuItPageRequest())
+                    )
+                }
                 .map {
                     val df = SimpleDateFormat("yyyy-MM-dd HH:mm:ss")
                     val date = df.format(Date())
@@ -37,8 +38,14 @@ class MainViewModel {
                     "${it.third.first}\n${it.third.second}"
                 }
                 .subscribeOn(Schedulers.newThread())
-                .subscribeNext {
-                    topics.accept(it)
-                }.addTo(disposable)
+                .subscribeBy(
+                        onNext = {
+                            topics.accept(it)
+                        },
+                        onError = {
+                            Log.e("error", it.toString())
+                        }
+                )
+                .addTo(disposable)
     }
 }
